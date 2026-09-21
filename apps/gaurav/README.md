@@ -55,6 +55,13 @@ https://github.com/gauravvvvvvvvvv/puzzlyy
 
 A reusable Kotlin Multiplatform calendar component supporting day, week, month, and year views, configurable week starts and year ranges, theming, today indicators, and optional analytics/chart integration.
 
+The library is published on Maven Central and can be consumed directly as:
+
+`io.github.gauravvvvvvvvvv:kmp-calendar:1.0.1`
+
+**Maven Central:**  
+https://central.sonatype.com/artifact/io.github.gauravvvvvvvvvv/kmp-calendar
+
 **Source:**  
 https://github.com/gauravvvvvvvvvv/kmp-calendar
 
@@ -73,6 +80,14 @@ https://flyboxlab.vercel.app/
 Puzzlyy can also be tried in the browser:
 
 https://puzzlyy.vercel.app/
+
+KMP Calendar can be added directly from Maven Central:
+
+```kotlin
+implementation("io.github.gauravvvvvvvvvv:kmp-calendar:1.0.1")
+```
+
+https://central.sonatype.com/artifact/io.github.gauravvvvvvvvvv/kmp-calendar
 
 The open-source projects above have their source linked for implementation details and commit history.
 
