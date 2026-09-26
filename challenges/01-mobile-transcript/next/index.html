@@ -1,0 +1,1193 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WhipScribe Mobile Transcript Reader — Gaurav's next pass</title>
+  <style>
+    :root {
+      --bg: #f4f4f2;
+      --panel: #ffffff;
+      --ink: #171717;
+      --muted: #6f6f6b;
+      --line: #deded9;
+      --soft: #efefeb;
+      --accent: #111111;
+      --success: #176c45;
+      --warn: #9b5b00;
+      --radius: 20px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button, input { font: inherit; }
+    button { color: inherit; }
+
+    .page {
+      width: min(1180px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 42px 0 80px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(280px, .6fr);
+      gap: 28px;
+      align-items: end;
+      padding: 24px 0 36px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      font-size: 13px;
+      font-weight: 750;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(38px, 6vw, 72px);
+      line-height: .95;
+      letter-spacing: -.055em;
+      max-width: 850px;
+    }
+
+    .hero-copy {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+
+    .principle {
+      margin: 28px 0 0;
+      padding: 18px 20px;
+      background: var(--ink);
+      color: white;
+      border-radius: 16px;
+      max-width: 820px;
+      font-size: 18px;
+      line-height: 1.4;
+    }
+
+    .index {
+      position: sticky;
+      top: 10px;
+      z-index: 10;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 12px;
+      margin: 18px 0 44px;
+      background: rgba(244, 244, 242, .9);
+      backdrop-filter: blur(18px);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+    }
+
+    .index a {
+      flex: 0 0 auto;
+      text-decoration: none;
+      color: var(--ink);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 9px 13px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    section {
+      margin: 0 0 68px;
+      scroll-margin-top: 94px;
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: 1fr minmax(280px, .7fr);
+      gap: 24px;
+      align-items: end;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(30px, 4vw, 48px);
+      letter-spacing: -.04em;
+      line-height: 1;
+    }
+
+    .section-copy {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 15px;
+    }
+
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .comparison {
+      min-width: 0;
+      padding: 16px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+    }
+
+    .comparison-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 14px;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .tag {
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: .02em;
+      text-transform: none;
+    }
+
+    .current-frame {
+      display: grid;
+      place-items: center;
+      min-height: 690px;
+      overflow: hidden;
+      background: #ecece7;
+      border-radius: 18px;
+    }
+
+    .current-frame img {
+      display: block;
+      width: min(100%, 390px);
+      height: auto;
+      border-radius: 14px;
+      box-shadow: 0 22px 60px rgba(0,0,0,.08);
+    }
+
+    .missing {
+      min-height: 690px;
+      display: grid;
+      place-items: center;
+      border: 1px dashed #bbb;
+      border-radius: 18px;
+      background:
+        linear-gradient(135deg, transparent 0 49%, rgba(0,0,0,.025) 49% 51%, transparent 51% 100%),
+        #f3f3ef;
+      padding: 36px;
+      text-align: center;
+    }
+
+    .missing strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 24px;
+      letter-spacing: -.03em;
+    }
+
+    .missing p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 320px;
+      line-height: 1.5;
+    }
+
+    .phone-wrap {
+      min-height: 690px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      background: #ecece7;
+      padding: 26px 12px;
+    }
+
+    .phone {
+      width: 320px;
+      height: 640px;
+      border: 7px solid #151515;
+      border-radius: 34px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 25px 60px rgba(0,0,0,.14);
+      position: relative;
+    }
+
+    .status {
+      height: 24px;
+      padding: 6px 13px 0;
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      font-weight: 800;
+      background: #fff;
+      position: relative;
+      z-index: 6;
+    }
+
+    .topbar {
+      height: 49px;
+      padding: 5px 10px 7px;
+      display: grid;
+      grid-template-columns: 40px minmax(0,1fr) 82px;
+      align-items: center;
+      border-bottom: 1px solid #ededeb;
+      background: rgba(255,255,255,.97);
+      position: relative;
+      z-index: 5;
+    }
+
+    .icon-button {
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      font-weight: 800;
+      cursor: default;
+    }
+
+    .icon-button.dark {
+      background: #191919;
+      color: white;
+    }
+
+    .title {
+      min-width: 0;
+      text-align: center;
+    }
+
+    .title strong {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 12px;
+    }
+
+    .title span {
+      display: block;
+      margin-top: 2px;
+      color: #858580;
+      font-size: 9px;
+    }
+
+    .top-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 3px;
+    }
+
+    .tabs {
+      height: 38px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-bottom: 1px solid #ededeb;
+      background: white;
+      position: relative;
+      z-index: 4;
+    }
+
+    .tab {
+      border: 0;
+      background: transparent;
+      font-size: 10px;
+      font-weight: 750;
+      color: #8a8a84;
+    }
+
+    .tab.active {
+      color: #111;
+      box-shadow: inset 0 -2px #111;
+    }
+
+    .reader {
+      height: calc(100% - 24px - 49px - 38px);
+      overflow: hidden;
+      position: relative;
+      background: #fff;
+    }
+
+    .content {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      padding: 13px 14px 120px;
+    }
+
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      color: #858580;
+      font-size: 9px;
+      margin-bottom: 16px;
+    }
+
+    .segment {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 8px;
+      margin-bottom: 17px;
+    }
+
+    .time {
+      font-size: 9px;
+      font-variant-numeric: tabular-nums;
+      color: #8a8a84;
+      padding-top: 2px;
+    }
+
+    .speech {
+      font-size: 11px;
+      line-height: 1.48;
+      color: #252522;
+    }
+
+    .speech mark {
+      background: #fff0a7;
+      padding: 0 1px;
+    }
+
+    .speaker {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 5px;
+      font-size: 9px;
+      font-weight: 800;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #222;
+      flex: 0 0 auto;
+    }
+
+    .dot.b { background: #5d68b6; }
+    .dot.c { background: #a85a62; }
+    .dot.d { background: #4f7e62; }
+
+    .mini-player {
+      position: absolute;
+      left: 9px;
+      right: 9px;
+      bottom: 9px;
+      height: 62px;
+      border-radius: 16px;
+      background: #171717;
+      color: white;
+      display: grid;
+      grid-template-columns: 38px 1fr 34px;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 9px;
+      box-shadow: 0 15px 32px rgba(0,0,0,.2);
+      z-index: 8;
+    }
+
+    .play {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: white;
+      color: #111;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .track strong {
+      display: block;
+      font-size: 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .track small {
+      color: #bbb;
+      font-size: 8px;
+    }
+
+    .progress {
+      height: 3px;
+      background: #444;
+      border-radius: 99px;
+      margin-top: 5px;
+      overflow: hidden;
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      width: 37%;
+      background: white;
+      border-radius: inherit;
+    }
+
+    .speed {
+      font-size: 9px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .boundary {
+      margin: 22px 0 4px 50px;
+      padding: 13px;
+      border: 1px solid #deded9;
+      background: #f8f8f5;
+      border-radius: 12px;
+      font-size: 10px;
+      line-height: 1.45;
+    }
+
+    .boundary strong { display: block; margin-bottom: 3px; }
+    .boundary button {
+      width: 100%;
+      margin-top: 9px;
+      border: 0;
+      border-radius: 10px;
+      padding: 9px;
+      background: #171717;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 800;
+    }
+
+    .searchbar {
+      height: 47px;
+      padding: 6px 8px;
+      display: grid;
+      grid-template-columns: 32px 1fr 60px;
+      gap: 6px;
+      align-items: center;
+      border-bottom: 1px solid #ededeb;
+      background: white;
+    }
+
+    .searchbar input {
+      min-width: 0;
+      height: 34px;
+      border: 1px solid #d9d9d5;
+      border-radius: 10px;
+      padding: 0 9px;
+      background: #f7f7f4;
+      font-size: 10px;
+      outline: none;
+    }
+
+    .result-count {
+      text-align: right;
+      font-size: 8px;
+      color: #777;
+    }
+
+    .keyboard {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 180px;
+      padding: 12px 6px 8px;
+      background: #d8d8d8;
+      z-index: 7;
+    }
+
+    .keys {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 3px;
+    }
+
+    .key {
+      height: 28px;
+      border-radius: 5px;
+      background: white;
+      display: grid;
+      place-items: center;
+      font-size: 8px;
+      box-shadow: 0 1px 1px rgba(0,0,0,.18);
+    }
+
+    .kbd-note {
+      text-align: center;
+      margin-top: 9px;
+      color: #666;
+      font-size: 8px;
+      font-weight: 700;
+    }
+
+    .sheet {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      bottom: 8px;
+      background: white;
+      border: 1px solid #dadad6;
+      border-radius: 20px;
+      padding: 8px 10px 12px;
+      box-shadow: 0 16px 45px rgba(0,0,0,.17);
+      z-index: 8;
+    }
+
+    .grabber {
+      width: 38px;
+      height: 4px;
+      margin: 1px auto 9px;
+      border-radius: 99px;
+      background: #d5d5d1;
+    }
+
+    .sheet h3 {
+      margin: 2px 4px 7px;
+      font-size: 11px;
+    }
+
+    .menu-item {
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 6px;
+      border-top: 1px solid #efefec;
+      font-size: 10px;
+      font-weight: 650;
+    }
+
+    .menu-item:first-of-type { border-top: 0; }
+    .danger { color: #a43535; }
+
+    .selection {
+      background: #dbe6ff;
+      border-radius: 3px;
+      padding: 1px 0;
+    }
+
+    .selection-bar {
+      position: absolute;
+      left: 54px;
+      top: 218px;
+      display: flex;
+      gap: 3px;
+      padding: 5px;
+      border-radius: 12px;
+      background: #171717;
+      color: white;
+      z-index: 6;
+      box-shadow: 0 9px 24px rgba(0,0,0,.2);
+    }
+
+    .selection-bar button {
+      min-height: 34px;
+      border: 0;
+      border-radius: 8px;
+      padding: 0 8px;
+      background: transparent;
+      color: white;
+      font-size: 8px;
+      font-weight: 750;
+    }
+
+    .selection-bar button.primary {
+      background: white;
+      color: #111;
+    }
+
+    .processing-card {
+      margin: 20px 14px;
+      padding: 17px;
+      border: 1px solid #dfdfdb;
+      border-radius: 16px;
+      background: #fafaf7;
+    }
+
+    .processing-card h3 {
+      margin: 0 0 5px;
+      font-size: 15px;
+      letter-spacing: -.025em;
+    }
+
+    .processing-card p {
+      margin: 0;
+      color: #74746f;
+      font-size: 9px;
+      line-height: 1.45;
+    }
+
+    .phase {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 14px;
+      font-size: 9px;
+      font-weight: 750;
+    }
+
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid #d2d2cc;
+      border-top-color: #171717;
+      border-radius: 50%;
+    }
+
+    .skeleton {
+      margin: 14px;
+    }
+
+    .sk {
+      height: 8px;
+      margin: 9px 0;
+      border-radius: 99px;
+      background: #e9e9e5;
+    }
+
+    .sk.s1 { width: 78%; }
+    .sk.s2 { width: 91%; }
+    .sk.s3 { width: 59%; }
+
+    .why {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .why div {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel);
+    }
+
+    .why strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+    }
+
+    .why span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
+    .kept {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .kept article {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--panel);
+    }
+
+    .kept h3 {
+      margin: 0 0 8px;
+      font-size: 14px;
+    }
+
+    .kept p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .footer {
+      border-top: 1px solid var(--line);
+      padding-top: 24px;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 13px;
+    }
+
+    @media (max-width: 820px) {
+      .hero, .section-head { grid-template-columns: 1fr; }
+      .compare { grid-template-columns: 1fr; }
+      .why { grid-template-columns: 1fr; }
+      .kept { grid-template-columns: 1fr; }
+      .current-frame, .missing, .phone-wrap { min-height: 620px; }
+      .page { width: min(100% - 18px, 1180px); padding-top: 22px; }
+      .index { top: 6px; margin-bottom: 34px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">WhipScribe · Track 1 · Challenge 01</p>
+        <h1>The transcript should feel like the content, not the controls.</h1>
+        <p class="principle">My next pass optimizes for one mobile job: find the moment, understand who said it, and keep listening without losing your place.</p>
+      </div>
+      <p class="hero-copy">
+        I deliberately kept the existing visual language. This is a product-structure pass, not a rebrand:
+        less sticky chrome, one-tap search, an honest processing state, usable multi-speaker reading,
+        and contextual actions that appear only when they are needed.
+      </p>
+    </header>
+
+    <nav class="index" aria-label="Prototype sections">
+      <a href="#reader">Reader</a>
+      <a href="#search">Search + keyboard</a>
+      <a href="#actions">Actions</a>
+      <a href="#selection">Selection</a>
+      <a href="#processing">Processing</a>
+      <a href="#speakers">4 speakers</a>
+    </nav>
+
+    <section id="reader">
+      <div class="section-head">
+        <h2>1. Give the transcript the viewport.</h2>
+        <p class="section-copy">
+          The current mobile reader asks the transcript, preview CTA and persistent player to share the same small screen.
+          I keep playback persistent, but move the free-preview conversion point into the content boundary instead of keeping a second sticky bar.
+        </p>
+      </div>
+
+      <div class="compare">
+        <article class="comparison">
+          <div class="comparison-title">Current <span class="tag">390 px reference</span></div>
+          <div class="current-frame">
+            <img src="../after/03-reader-390.png" alt="Current WhipScribe mobile transcript reader" />
+          </div>
+        </article>
+
+        <article class="comparison">
+          <div class="comparison-title">Proposed <span class="tag">320 px</span></div>
+          <div class="phone-wrap">
+            <div class="phone">
+              <div class="status"><span>9:41</span><span>● ● ◼</span></div>
+              <div class="topbar">
+                <button class="icon-button" aria-label="Back">‹</button>
+                <div class="title">
+                  <strong>Design review · September 25</strong>
+                  <span>42 min · 4 speakers</span>
+                </div>
+                <div class="top-actions">
+                  <button class="icon-button" aria-label="Search">⌕</button>
+                  <button class="icon-button" aria-label="More">•••</button>
+                </div>
+              </div>
+              <div class="tabs">
+                <button class="tab">Summary</button>
+                <button class="tab active">Transcript</button>
+                <button class="tab">Ask</button>
+              </div>
+              <div class="reader">
+                <div class="content">
+                  <div class="meta"><span>Transcript</span><span>Edited 2 min ago</span></div>
+
+                  <div class="segment">
+                    <div class="time">12:18</div>
+                    <div class="speech">The onboarding is doing too much before the user has heard a single useful answer.</div>
+                  </div>
+
+                  <div class="segment">
+                    <div class="time">12:31</div>
+                    <div class="speech">Can we make the first action the thing they came here to do, then ask for the rest later?</div>
+                  </div>
+
+                  <div class="segment">
+                    <div class="time">12:52</div>
+                    <div class="speech">Yes. Let the product earn the second step instead of requiring it up front.</div>
+                  </div>
+
+                  <div class="boundary">
+                    <strong>You have reached the end of the preview.</strong>
+                    Create a free account to continue this transcript. Your place stays here.
+                    <button>Create free account</button>
+                  </div>
+                </div>
+
+                <div class="mini-player">
+                  <div class="play">▶</div>
+                  <div class="track">
+                    <strong>Design review</strong>
+                    <small>12:52 / 42:07</small>
+                    <div class="progress"><span></span></div>
+                  </div>
+                  <div class="speed">1×</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="why">
+        <div><strong>Removed</strong><span>The second sticky “Keep reading” surface.</span></div>
+        <div><strong>Kept</strong><span>The bottom player, because playback is part of reading.</span></div>
+        <div><strong>Changed</strong><span>The preview wall becomes a natural point in the transcript.</span></div>
+      </div>
+    </section>
+
+    <section id="search">
+      <div class="section-head">
+        <h2>2. Search is a mode, not another panel.</h2>
+        <p class="section-copy">
+          Search is one of the highest-value mobile actions, so I keep it one tap away.
+          When the keyboard appears, the audio player collapses out of the way instead of competing for the same bottom area.
+        </p>
+      </div>
+
+      <div class="compare">
+        <article class="comparison">
+          <div class="comparison-title">Current <span class="tag">search reference</span></div>
+          <div class="current-frame">
+            <img src="../after/06-search.png" alt="Current WhipScribe mobile transcript search" />
+          </div>
+        </article>
+
+        <article class="comparison">
+          <div class="comparison-title">Proposed <span class="tag">keyboard-aware</span></div>
+          <div class="phone-wrap">
+            <div class="phone">
+              <div class="status"><span>9:41</span><span>● ● ◼</span></div>
+              <div class="searchbar">
+                <button class="icon-button" aria-label="Close search">‹</button>
+                <input value="onboarding" aria-label="Search transcript" />
+                <div class="result-count">2 of 7<br />↑ &nbsp; ↓</div>
+              </div>
+              <div class="reader" style="height: calc(100% - 24px - 47px);">
+                <div class="content" style="padding-bottom: 190px;">
+                  <div class="segment">
+                    <div class="time">08:11</div>
+                    <div class="speech">The <mark>onboarding</mark> still starts with configuration instead of value.</div>
+                  </div>
+                  <div class="segment">
+                    <div class="time">12:18</div>
+                    <div class="speech">The <mark>onboarding</mark> is doing too much before the user has heard a single useful answer.</div>
+                  </div>
+                  <div class="segment">
+                    <div class="time">18:04</div>
+                    <div class="speech">I would remove one choice from <mark>onboarding</mark> rather than add another explainer.</div>
+                  </div>
+                </div>
+
+                <div class="keyboard">
+                  <div class="keys">
+                    <div class="key">Q</div><div class="key">W</div><div class="key">E</div><div class="key">R</div><div class="key">T</div>
+                    <div class="key">Y</div><div class="key">U</div><div class="key">I</div><div class="key">O</div><div class="key">P</div>
+                    <div class="key">A</div><div class="key">S</div><div class="key">D</div><div class="key">F</div><div class="key">G</div>
+                    <div class="key">H</div><div class="key">J</div><div class="key">K</div><div class="key">L</div><div class="key">⌫</div>
+                  </div>
+                  <div class="kbd-note">Player is temporarily collapsed while typing. Audio keeps its state.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="actions">
+      <div class="section-head">
+        <h2>3. More should mean “file actions”, not “everything else”.</h2>
+        <p class="section-copy">
+          I would not hide Search inside a generic actions sheet: search is core to a transcript.
+          The overflow menu becomes a small set of file-level actions. Reading preferences belong near the reader, while account navigation belongs outside this menu.
+        </p>
+      </div>
+
+      <div class="compare">
+        <article class="comparison">
+          <div class="comparison-title">Current <span class="tag">9-item menu</span></div>
+          <div class="current-frame">
+            <img src="../after/08-more-menu.png" alt="Current WhipScribe mobile more menu" />
+          </div>
+        </article>
+
+        <article class="comparison">
+          <div class="comparison-title">Proposed <span class="tag">4 file actions</span></div>
+          <div class="phone-wrap">
+            <div class="phone">
+              <div class="status"><span>9:41</span><span>● ● ◼</span></div>
+              <div class="topbar">
+                <button class="icon-button">‹</button>
+                <div class="title"><strong>Design review · September 25</strong><span>42 min · 4 speakers</span></div>
+                <div class="top-actions"><button class="icon-button">⌕</button><button class="icon-button dark">•••</button></div>
+              </div>
+              <div class="tabs"><button class="tab">Summary</button><button class="tab active">Transcript</button><button class="tab">Ask</button></div>
+              <div class="reader">
+                <div class="content">
+                  <div class="segment"><div class="time">12:18</div><div class="speech">The transcript remains visible behind the sheet so the user keeps context.</div></div>
+                  <div class="segment"><div class="time">12:31</div><div class="speech">Reading controls do not belong in file management.</div></div>
+                </div>
+
+                <div class="sheet">
+                  <div class="grabber"></div>
+                  <h3>Recording</h3>
+                  <div class="menu-item"><span>Export</span><span>›</span></div>
+                  <div class="menu-item"><span>Rename</span><span>›</span></div>
+                  <div class="menu-item"><span>Details</span><span>›</span></div>
+                  <div class="menu-item danger"><span>Delete recording</span><span>›</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="selection">
+      <div class="section-head">
+        <h2>4. Selection should answer “what can I do with this moment?”</h2>
+        <p class="section-copy">
+          On mobile, selecting transcript text should not expose a second full navigation surface.
+          The contextual bar stays small: play from the selected moment, copy it, or ask WhipScribe about it. Secondary actions can remain in the system selection menu.
+        </p>
+      </div>
+
+      <div class="compare">
+        <article class="comparison">
+          <div class="comparison-title">Current <span class="tag">selection reference</span></div>
+          <div class="current-frame">
+            <img src="../after/10-text-selection.png" alt="Current WhipScribe mobile transcript text selection" />
+          </div>
+        </article>
+
+        <article class="comparison">
+          <div class="comparison-title">Proposed <span class="tag">contextual actions</span></div>
+          <div class="phone-wrap">
+            <div class="phone">
+              <div class="status"><span>9:41</span><span>● ● ◼</span></div>
+              <div class="topbar">
+                <button class="icon-button">‹</button>
+                <div class="title"><strong>Design review · September 25</strong><span>42 min · 4 speakers</span></div>
+                <div class="top-actions"><button class="icon-button">⌕</button><button class="icon-button">•••</button></div>
+              </div>
+              <div class="tabs"><button class="tab">Summary</button><button class="tab active">Transcript</button><button class="tab">Ask</button></div>
+              <div class="reader">
+                <div class="content">
+                  <div class="segment">
+                    <div class="time">12:18</div>
+                    <div class="speech">The onboarding is doing too much before <span class="selection">the user has heard a single useful answer.</span></div>
+                  </div>
+                  <div class="segment">
+                    <div class="time">12:31</div>
+                    <div class="speech">Can we make the first action the thing they came here to do?</div>
+                  </div>
+                </div>
+
+                <div class="selection-bar">
+                  <button class="primary">▶ Play</button>
+                  <button>Copy</button>
+                  <button>Ask</button>
+                </div>
+
+                <div class="mini-player">
+                  <div class="play">▶</div>
+                  <div class="track"><strong>Design review</strong><small>12:18 / 42:07</small><div class="progress"><span></span></div></div>
+                  <div class="speed">1×</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="processing">
+      <div class="section-head">
+        <h2>5. Processing should be honest, not artificially precise.</h2>
+        <p class="section-copy">
+          The challenge has no processing screen today. I would not invent a percentage or ETA unless the backend can support it reliably.
+          The UI should say what is true, tell the user they can leave, and gradually replace skeleton content as results become available.
+        </p>
+      </div>
+
+      <div class="compare">
+        <article class="comparison">
+          <div class="comparison-title">Current <span class="tag">missing state</span></div>
+          <div class="missing">
+            <div>
+              <strong>No designed processing state.</strong>
+              <p>The challenge explicitly calls this out. There is no current screen to compare visually.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="comparison">
+          <div class="comparison-title">Proposed <span class="tag">truthful progress</span></div>
+          <div class="phone-wrap">
+            <div class="phone">
+              <div class="status"><span>9:41</span><span>● ● ◼</span></div>
+              <div class="topbar">
+                <button class="icon-button">‹</button>
+                <div class="title"><strong>Customer interview.mp3</strong><span>38 min</span></div>
+                <div class="top-actions"><button class="icon-button">•••</button></div>
+              </div>
+              <div class="tabs"><button class="tab">Summary</button><button class="tab active">Transcript</button><button class="tab">Ask</button></div>
+              <div class="reader">
+                <div class="processing-card">
+                  <h3>Transcribing your recording</h3>
+                  <p>You can leave this page. WhipScribe will keep working and the transcript will appear here when it is ready.</p>
+                  <div class="phase"><span class="spinner"></span><span>Finding speech and speakers…</span></div>
+                </div>
+
+                <div class="skeleton">
+                  <div class="sk s1"></div>
+                  <div class="sk s2"></div>
+                  <div class="sk s3"></div>
+                  <div class="sk s2"></div>
+                  <div class="sk s1"></div>
+                </div>
+
+                <div class="mini-player">
+                  <div class="play">▶</div>
+                  <div class="track"><strong>Customer interview</strong><small>Recording ready to play</small><div class="progress"><span style="width:0"></span></div></div>
+                  <div class="speed">1×</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="speakers">
+      <div class="section-head">
+        <h2>6. Four speakers should read like a conversation.</h2>
+        <p class="section-copy">
+          Speaker identity is shown once per turn, not on every transcript line. The label sits in the text column instead of stealing width from the timestamp gutter,
+          so the layout still works at 320 px and remains readable without shrinking body copy.
+        </p>
+      </div>
+
+      <div class="compare">
+        <article class="comparison">
+          <div class="comparison-title">Current <span class="tag">not demonstrated</span></div>
+          <div class="missing">
+            <div>
+              <strong>Only single-speaker states are shown.</strong>
+              <p>The challenge specifically asks for a four-speaker meeting at 320 px.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="comparison">
+          <div class="comparison-title">Proposed <span class="tag">4 speakers · 320 px</span></div>
+          <div class="phone-wrap">
+            <div class="phone">
+              <div class="status"><span>9:41</span><span>● ● ◼</span></div>
+              <div class="topbar">
+                <button class="icon-button">‹</button>
+                <div class="title"><strong>Weekly product review</strong><span>31 min · 4 speakers</span></div>
+                <div class="top-actions"><button class="icon-button">⌕</button><button class="icon-button">•••</button></div>
+              </div>
+              <div class="tabs"><button class="tab">Summary</button><button class="tab active">Transcript</button><button class="tab">Ask</button></div>
+              <div class="reader">
+                <div class="content">
+                  <div class="segment">
+                    <div class="time">03:18</div>
+                    <div>
+                      <div class="speaker"><span class="dot"></span>Maya</div>
+                      <div class="speech">The first-run screen should show the recording before it shows the configuration.</div>
+                    </div>
+                  </div>
+
+                  <div class="segment">
+                    <div class="time">03:29</div>
+                    <div>
+                      <div class="speaker"><span class="dot b"></span>Jon</div>
+                      <div class="speech">Agree. I only need language settings if detection is wrong.</div>
+                    </div>
+                  </div>
+
+                  <div class="segment">
+                    <div class="time">03:43</div>
+                    <div>
+                      <div class="speaker"><span class="dot c"></span>Priya</div>
+                      <div class="speech">Can the user correct a speaker without entering an edit mode?</div>
+                    </div>
+                  </div>
+
+                  <div class="segment">
+                    <div class="time">04:02</div>
+                    <div>
+                      <div class="speaker"><span class="dot d"></span>Alex</div>
+                      <div class="speech">That feels like a useful long-press action on the name, not another permanent button.</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mini-player">
+                  <div class="play">▶</div>
+                  <div class="track"><strong>Weekly product review</strong><small>04:02 / 31:19</small><div class="progress"><span style="width:22%"></span></div></div>
+                  <div class="speed">1×</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>What I deliberately kept.</h2>
+        <p class="section-copy">The goal is not to redraw everything. The current pass already has useful structure.</p>
+      </div>
+
+      <div class="kept">
+        <article>
+          <h3>Timestamps in the gutter</h3>
+          <p>They connect reading to playback and give scan anchors. I would keep them visible instead of hiding them behind a settings toggle by default.</p>
+        </article>
+        <article>
+          <h3>A persistent audio player</h3>
+          <p>Reading and listening are the same task here. The player only yields space while the keyboard or a blocking sheet is active.</p>
+        </article>
+        <article>
+          <h3>Transcript as a first-class tab</h3>
+          <p>Summary and Ask are useful, but the transcript is the evidence. It remains a peer surface rather than becoming buried under AI features.</p>
+        </article>
+        <article>
+          <h3>Desktop unchanged</h3>
+          <p>This pass is intentionally mobile-only. None of these decisions require changing the laptop layout, which reduces scope and regression risk.</p>
+        </article>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <strong>Implementation notes:</strong> this is deliberately a static product prototype, not a fake production implementation.
+      The processing screen avoids unsupported percentages/ETAs. Search keeps its own one-tap entry point instead of being hidden in a universal actions menu.
+      The preview CTA is moved into the content boundary so the transcript and player remain the two persistent layers.
+    </footer>
+  </main>
+</body>
+</html>
